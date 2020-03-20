@@ -1,9 +1,9 @@
 ; Title: Low level I/O Procedures
 ; Author: Joseph Polaski
 ; Description:This program will read in 10 decimal signed 32-bit integers as strings. It then converts them to a their signed numeric form
-;			  and then caluculates their sum and average rounded to the nearest whole number. These numbers are then converted back to 
-;			  string and displayed to the user. Macros are used to display output to users. All variables both integer and string are
-;			  processed on the stack.
+;	      and then caluculates their sum and average rounded to the nearest whole number. These numbers are then converted back to 
+;	      string and displayed to the user. Macros are used to display output to users. All variables both integer and string are
+;	      processed on the stack.
 
 INCLUDE Irvine32.inc
 
