@@ -155,10 +155,10 @@ main ENDP
 ;	description: prints introduction to user
 ;**********************************************************************************************************
 Introduction	PROC
-		enter 0,0								; setup stack frame and base pointer
+		enter 0,0						; setup stack frame and base pointer
 
 		
-		mov		edx, [ebp + 20]					; print introduction				
+		mov		edx, [ebp + 20]				; print introduction				
 		call	WriteString
 		call	CrLf
 		call	CrLf
@@ -174,8 +174,8 @@ Introduction	PROC
 		call	CrLf
 		call	CrLf
 
-		leave									; terminate stack frame
-		ret 16									; clean up stack
+		leave							; terminate stack frame
+		ret 16							; clean up stack
 Introduction	ENDP
 
 ;**********************************************************************************************************
@@ -192,67 +192,67 @@ Introduction	ENDP
 ;				 in array.
 ;**********************************************************************************************************
 readVal	PROC
-		pushad											; store general purpose registers
+		pushad							; store general purpose registers
 		mov		ebp, esp
 
-		xor		edi, edi								; clear registers to avoid data corruption
+		xor		edi, edi				; clear registers to avoid data corruption
 		xor		ecx, ecx
 		xor		edx, edx
 
 		; parameters
-		mov		eax, [ebp + 52]							; SIZEOF userNumString
-		mov		ebx, [ebp + 48]							; OFFSET getStringPrompt
+		mov		eax, [ebp + 52]				; SIZEOF userNumString
+		mov		ebx, [ebp + 48]				; OFFSET getStringPrompt
 
 		; set array pointers
-		mov		esi, [ebp + 40]							; set esi to OFFSET userNumString
-		mov		edi, [ebp + 44]							; set edi to OFFSET userNumArray
+		mov		esi, [ebp + 40]				; set esi to OFFSET userNumString
+		mov		edi, [ebp + 44]				; set edi to OFFSET userNumArray
 
-		mov		ecx, [ebp + 36]							; set loop counter to 10 (NUM_AMOUNT)
+		mov		ecx, [ebp + 36]				; set loop counter to 10 (NUM_AMOUNT)
 
 		; declare and initialize local variables
 		sub		esp, 8									
-		mov		DWORD PTR [ebp - 4], 0					; (Invalid Flag) initialize local variable to 0
-		mov		SDWORD PTR [ebp - 8], 0					; (Converted number) initialize local variable to 0
+		mov		DWORD PTR [ebp - 4], 0			; (Invalid Flag) initialize local variable to 0
+		mov		SDWORD PTR [ebp - 8], 0			; (Converted number) initialize local variable to 0
 
 
-GET:													; get numbers top of loop		
-		getString	esi, ebx, eax						; invoke macro
+GET:									; get numbers top of loop		
+		getString	esi, ebx, eax				; invoke macro
 		call		CrLf
 		
 		; convert string to decimal
-		push	esi										; string entered by user
-		push	eax										; number of characters typed by user
+		push	esi						; string entered by user
+		push	eax						; number of characters typed by user
 
 		call	convertStringToDec
 
 		; Check if number was invalid
-		mov		eax, DWORD PTR [ebp - 4]				; Invalid Flag (returned from convertStringToDec)
+		mov		eax, DWORD PTR [ebp - 4]		; Invalid Flag (returned from convertStringToDec)
 		cmp		eax, 1
-		je		NV										; True: jump too not valid
+		je		NV					; True: jump too not valid
 
 		; False: Store number to array
 		mov		eax, SDWORD PTR [ebp - 8]
-		mov		[edi], eax								; insert number into index
-		add		edi, 4									; point edi to next index
-		jmp		NEXT									; jump to loop
+		mov		[edi], eax				; insert number into index
+		add		edi, 4					; point edi to next index
+		jmp		NEXT					; jump to loop
 
 NV:		; number not valid
-		mov		edx, [ebp + 56]							; fetch and print invalid number message
+		mov		edx, [ebp + 56]				; fetch and print invalid number message
 		call	WriteString
 		call	CrLf
 		call	CrLf
-		inc		ecx										; increment ecx so try is not counted
+		inc		ecx					; increment ecx so try is not counted
 
 NEXT:													
 		mov		eax, 0
-		mov		[esi], eax								; reset userNumString
-		mov		eax, [ebp + 52]							; reset eax to SIZEOF userNumString
+		mov		[esi], eax				; reset userNumString
+		mov		eax, [ebp + 52]				; reset eax to SIZEOF userNumString
 	
 		loop	GET
 
-		mov		esp, ebp								; remove local variables
-		popad											; restore general purpose registers
-		ret 24											; clean up stack
+		mov		esp, ebp				; remove local variables
+		popad							; restore general purpose registers
+		ret 24							; clean up stack
 readVal	ENDP
 
 ;**********************************************************************************************************
@@ -273,98 +273,98 @@ convertStringToDec	PROC
 		pushad
 		mov		ebp, esp
 
-		mov		esi, [ebp + 40]							; OFFSET userNumString 
-		mov		ecx, [ebp + 36]							; count of characters in userNumString
+		mov		esi, [ebp + 40]				; OFFSET userNumString 
+		mov		ecx, [ebp + 36]				; count of characters in userNumString
 
-		mov		ebx, 0									; secondary index counter
+		mov		ebx, 0					; secondary index counter
 
 		; declare and initialize local variables
 		sub		esp, 12									
-		mov		DWORD PTR [ebp - 4], 0					; CUSTOM SIGN FLAG: negative = 1, positive = 0, used to determine if original number was negative
-		mov		SDWORD PTR [ebp - 8], 0					; Power of Ten returned from calcPowerOfTen
-		mov		SDWORD PTR [ebp - 12], 0				; ACCUMULATOR: used to add all place values together, initialize local variable to 0
+		mov		DWORD PTR [ebp - 4], 0			; CUSTOM SIGN FLAG: negative = 1, positive = 0, used to determine if original number was negative
+		mov		SDWORD PTR [ebp - 8], 0			; Power of Ten returned from calcPowerOfTen
+		mov		SDWORD PTR [ebp - 12], 0		; ACCUMULATOR: used to add all place values together, initialize local variable to 0
 
-		cld												; clear direction flag
-string:													; iterate through string
+		cld							; clear direction flag
+string:									; iterate through string
 		xor		eax, eax
-		lodsb											; load contents contents of esi to eax
+		lodsb							; load contents contents of esi to eax
 
 		; IF ebx == 0 (first iteration)
 		cmp		ebx, 0
-		jne		NFI										; FALSE: jump to not first index		
-														; TRUE: check for sign character or number
+		jne		NFI					; FALSE: jump to not first index		
+									; TRUE: check for sign character or number
 
-		; IF eax  == '-'								; check for negative symbol
+		; IF eax  == '-'					; check for negative symbol
 		cmp		eax, 2Dh
-		jne		PCH										; FALSE: check for positive sign		
-														; TRUE: set custom sign flag = 1
+		jne		PCH					; FALSE: check for positive sign		
+									; TRUE: set custom sign flag = 1
 		mov		DWORD PTR [ebp - 4], 1
-		jmp		next									; jump to next
+		jmp		next					; jump to next
 
 PCH:	; IF eax  == '+'
 		cmp		eax, 2Bh
-		jne		INVLD									; FALSE: jump to Invalid
-														; TRUE: set custom sign flag = 0
+		jne		INVLD					; FALSE: jump to Invalid
+									; TRUE: set custom sign flag = 0
 		mov		DWORD PTR [ebp - 4], 0
-		jmp		next									; jump to next
+		jmp		next					; jump to next
 
-NFI:													; not first index
+NFI:									; not first index
 
 		; IF 30h <= eax (ascii hex value for digit 0)
 		cmp		eax, 30h
-		jl		INVLD									; FALSE number is not a numerical digit, jump to invalid flag
+		jl		INVLD					; FALSE number is not a numerical digit, jump to invalid flag
 
 		; ELSE IF eax <= 39h (ascii hex value for digit 9)
 		cmp		eax, 39h
-		jg		INVLD									; FALSE: number is not a numerical digit, jump to invalid
+		jg		INVLD					; FALSE: number is not a numerical digit, jump to invalid
 		
 		; TRUE: character is valid convert and accumulate
-		sub		eax, 30h								; subtract 30h to produce decimal digit
+		sub		eax, 30h				; subtract 30h to produce decimal digit
 		
 		; caluculate power of 10 to multiply by.
 		; this will be used to established the proper
 		; place for the digit.
-		mov		edx, ecx								; copy index (number place)
-		sub		edx, 2									; subtract 2 to adjust number of multiplications of 10 by itself		
+		mov		edx, ecx				; copy index (number place)
+		sub		edx, 2					; subtract 2 to adjust number of multiplications of 10 by itself		
 		push	edx
 
-		call	calcPowerOfTen							; return value stored in [ebp - 8]
+		call	calcPowerOfTen					; return value stored in [ebp - 8]
 
-		mov		edx, [ebp - 8]							; fetch power of 10
-		imul	edx										; multiply by digit to get place value		
+		mov		edx, [ebp - 8]				; fetch power of 10
+		imul	edx						; multiply by digit to get place value		
 		
-		add		DWORD PTR [ebp - 12], eax				; add to total in [ebp - 12]		
-		jmp		next									; jump to process next number
+		add		DWORD PTR [ebp - 12], eax		; add to total in [ebp - 12]		
+		jmp		next					; jump to process next number
 
-INVLD:													; INVALID entry
-		mov		SDWORD PTR [ebp + 44], 0				; return 0 to parent procedure local variable
-		mov		DWORD PTR [ebp + 48], 1					; return invalid flag = 1 to parent procedure local variable
-		jmp		FIN										; jump out of loop to finish
+INVLD:									; INVALID entry
+		mov		SDWORD PTR [ebp + 44], 0		; return 0 to parent procedure local variable
+		mov		DWORD PTR [ebp + 48], 1			; return invalid flag = 1 to parent procedure local variable
+		jmp		FIN					; jump out of loop to finish
 
-next:													; loop to next number
+next:									; loop to next number
 		inc		ebx
 		loop	string
-		jmp		DN										; jump to done protocol
+		jmp		DN					; jump to done protocol
 
-NG:														; negate number if sign flag is set
-		mov		eax, SDWORD PTR [ebp-12]				; retrieve total number		
+NG:									; negate number if sign flag is set
+		mov		eax, SDWORD PTR [ebp-12]		; retrieve total number		
 		neg		eax
-		mov		SDWORD PTR [ebp + 44], eax				; return to local variable of parent procedure
-		mov		DWORD PTR [ebp + 48], 0					; return invalid flag = 0 to parent procedure local variable
+		mov		SDWORD PTR [ebp + 44], eax		; return to local variable of parent procedure
+		mov		DWORD PTR [ebp + 48], 0			; return invalid flag = 0 to parent procedure local variable
 		jmp		FIN
 
-DN:														; done, store to array
+DN:									; done, store to array
 		;check custom sign flag
 		mov		eax, [ebp - 4]
 		cmp		eax, 1
-		je		NG										; jump to negate number number
+		je		NG					; jump to negate number number
 
 		mov		eax, SDWORD PTR [ebp-12]
-		mov		SDWORD PTR [ebp + 44], eax				; return to local variable of parent procedure		
-		mov		DWORD PTR [ebp + 48], 0					; return invalid flag = 0 to parent procedure local variable
-FIN:													; Finish
+		mov		SDWORD PTR [ebp + 44], eax		; return to local variable of parent procedure		
+		mov		DWORD PTR [ebp + 48], 0			; return invalid flag = 0 to parent procedure local variable
+FIN:									; Finish
 
-		mov		esp, ebp								; remove local variables
+		mov		esp, ebp				; remove local variables
 		popad
 		ret	8
 convertStringToDec	ENDP
@@ -385,34 +385,34 @@ convertStringToDec	ENDP
 ;				 order to calculate its proper place.
 ;**********************************************************************************************************
 calcPowerOfTen	PROC
-		pushad											; preserve registers
-		mov		ebp, esp								; set base pointer
+		pushad							; preserve registers
+		mov		ebp, esp				; set base pointer
 
-		mov		ecx, [ebp + 36]							; exponent number
+		mov		ecx, [ebp + 36]				; exponent number
 		mov		eax, 10
 		mov		ebx, 10
 
-		cmp		ecx, -1									; check for power of 0
-		je		PZ										; jump to power of zero
-		cmp		ecx, 0									; check for power of 1
-		je		PW										; jump to power of 1
+		cmp		ecx, -1					; check for power of 0
+		je		PZ					; jump to power of zero
+		cmp		ecx, 0					; check for power of 1
+		je		PW					; jump to power of 1
 
-xloop:													; exponent loop
+xloop:									; exponent loop
 		imul	ebx
 		loop	xloop
-		mov		SDWORD PTR [ebp+44], eax				; return to local variable in convertStringToDec
-		jmp		DNC										; done calculating power of ten		
+		mov		SDWORD PTR [ebp+44], eax		; return to local variable in convertStringToDec
+		jmp		DNC					; done calculating power of ten		
 
 PW:		; 1 exponent case
-		mov		SDWORD PTR [ebp+44], 10					; pass a value of 10 as return
+		mov		SDWORD PTR [ebp+44], 10			; pass a value of 10 as return
 		jmp		DNC
 
 PZ:		; zero exponent case
-		mov		SDWORD PTR [ebp+44], 1					; pass a value of 1 as return
+		mov		SDWORD PTR [ebp+44], 1			; pass a value of 1 as return
 
 DNC:	; Done Calculating
-		popad											; restore registers
-		ret 4											; clean up stack
+		popad							; restore registers
+		ret 4							; clean up stack
 calcPowerOfTen	ENDP
 
 ;**********************************************************************************************************
@@ -429,44 +429,44 @@ calcPowerOfTen	ENDP
 ;				 numbers.
 ;**********************************************************************************************************
 writeVal	PROC
-		pushad											; preserve registers
-		mov		ebp, esp								; set stack frame and base pointer
+		pushad							; preserve registers
+		mov		ebp, esp				; set stack frame and base pointer
 
 		; declare and initialize local variables
-		sub		esp, 16									; create two 32-bit local variables
-		mov		SDWORD PTR [ebp - 4], 0					; initialize average
-		mov		SDWORD PTR [ebp - 8], 0					; initialize sum
-		mov		SDWORD PTR [ebp - 12], 0				; initialize sum count
-		mov		SDWORD PTR [ebp - 16], 0				; initialize string length counter
+		sub		esp, 16					; create two 32-bit local variables
+		mov		SDWORD PTR [ebp - 4], 0			; initialize average
+		mov		SDWORD PTR [ebp - 8], 0			; initialize sum
+		mov		SDWORD PTR [ebp - 12], 0		; initialize sum count
+		mov		SDWORD PTR [ebp - 16], 0		; initialize string length counter
 
 		; set pointers
-		mov		esi, [ebp + 56]							; set source pointer to offset of userNumArray	
+		mov		esi, [ebp + 56]				; set source pointer to offset of userNumArray	
 
-		mov		ecx, [ebp + 52]							; set counter to length of userNumArray
+		mov		ecx, [ebp + 52]				; set counter to length of userNumArray
 
-		cld												; clear directional loop
+		cld							; clear directional loop
 
 CONL:	; Conversion Loop		
 		
-		mov		eax, [esi]								; fetch first number
-		add		SDWORD PTR [ebp - 8], eax				; add to local sum variable
-		add		SDWORD PTR [ebp - 12], 1				; increment sum count
+		mov		eax, [esi]				; fetch first number
+		add		SDWORD PTR [ebp - 8], eax		; add to local sum variable
+		add		SDWORD PTR [ebp - 12], 1		; increment sum count
 
 
-		push	[esi]									; pass number to convert
-		push	[ebp + 48]								; push string address
+		push	[esi]						; pass number to convert
+		push	[ebp + 48]					; push string address
 
-		call	numToString								; call conversion helper
+		call	numToString					; call conversion helper
 
 		; reverse backwards string
 
-		push	[ebp + 60]								; OFFSET of finalString
-		push	[ebp + 48]								; OFFSET of userNumString
-		push	[ebp - 16]								; LENGTHOF of userNumString
+		push	[ebp + 60]					; OFFSET of finalString
+		push	[ebp + 48]					; OFFSET of userNumString
+		push	[ebp - 16]					; LENGTHOF of userNumString
 
-		call	reverseString							; call helper procedure to reverse string
+		call	reverseString					; call helper procedure to reverse string
 
-		cmp		ecx, 10									; check for first iteration
+		cmp		ecx, 10					; check for first iteration
 		jne		NF
 
 FI:		; Invoke macro to print number (first iteration)
@@ -476,8 +476,8 @@ FI:		; Invoke macro to print number (first iteration)
 
 DN:		; Done printing
 
-		add		esi, 4									; increment array pointer
-		mov		SDWORD PTR [ebp - 16], 0				; clear string length counter
+		add		esi, 4					; increment array pointer
+		mov		SDWORD PTR [ebp - 16], 0		; clear string length counter
 		loop	CONL
 		jmp		CALC
 
@@ -488,45 +488,45 @@ NF:		; Invoke macro to print number (not first iteration)
 
 CALC:	; calculate and display average
 
-		push	[ebp - 8]								; push sum
-		push	[ebp - 12]								; push sum count
+		push	[ebp - 8]					; push sum
+		push	[ebp - 12]					; push sum count
 
 		call	calcAvg
 
-		push	[ebp - 4]								; sum of user numbers
-		push	[ebp + 48]								; OFFSET userNumString
+		push	[ebp - 4]					; sum of user numbers
+		push	[ebp + 48]					; OFFSET userNumString
 
-		call	numToString								; call conversion helper
+		call	numToString					; call conversion helper
 
-		push	[ebp + 60]								; OFFSET of finalString
-		push	[ebp + 48]								; OFFSET of userNumString
-		push	[ebp - 16]								; LENGTHOF of userNumString
+		push	[ebp + 60]					; OFFSET of finalString
+		push	[ebp + 48]					; OFFSET of userNumString
+		push	[ebp - 16]					; LENGTHOF of userNumString
 
-		call	reverseString							; call helper procedure to reverse string
+		call	reverseString					; call helper procedure to reverse string
 
 		call	CrLf
 		displayString	[ebp + 60], [ebp + 44]			; print
 
 		; convert and display sum
 
-		push	[ebp - 8]								; sum of user numbers
-		push	[ebp + 48]								; OFFSET userNumString
+		push	[ebp - 8]					; sum of user numbers
+		push	[ebp + 48]					; OFFSET userNumString
 
-		call	numToString								; call conversion helper
+		call	numToString					; call conversion helper
 
-		push	[ebp + 60]								; OFFSET of finalString
-		push	[ebp + 48]								; OFFSET of userNumString
-		push	[ebp - 16]								; LENGTHOF of userNumString
+		push	[ebp + 60]					; OFFSET of finalString
+		push	[ebp + 48]					; OFFSET of userNumString
+		push	[ebp - 16]					; LENGTHOF of userNumString
 
-		call	reverseString							; call helper procedure to reverse string
+		call	reverseString					; call helper procedure to reverse string
 
 		call	CrLf
 		displayString	[ebp + 60], [ebp + 40]			; print
 		call	CrLf
 		call	CrLf
 
-		mov		esp, ebp								; remove local variables
-		popad											; restore registers
+		mov		esp, ebp				; remove local variables
+		popad							; restore registers
 		ret	28
 writeVal	ENDP
 
@@ -542,72 +542,72 @@ writeVal	ENDP
 ;				 
 ;**********************************************************************************************************
 numToString	PROC
-		pushad											; preserve registers
-		mov		ebp, esp								; set stack frame and base pointer
+		pushad							; preserve registers
+		mov		ebp, esp				; set stack frame and base pointer
 
-		sub		esp, 8									; create local variables
-		mov		SDWORD PTR [ebp - 4], 0					; initialize to 0 negative flag NF = 1 (negative)
-		mov		SDWORD PTR [ebp - 8], 0					; initialize counter to 0 (counts length of string)
-		mov		edi, [ebp + 36]							; point edi to destination string
+		sub		esp, 8					; create local variables
+		mov		SDWORD PTR [ebp - 4], 0			; initialize to 0 negative flag NF = 1 (negative)
+		mov		SDWORD PTR [ebp - 8], 0			; initialize counter to 0 (counts length of string)
+		mov		edi, [ebp + 36]				; point edi to destination string
 		mov		ebx, 0
-		mov		[edi], ebx								; clear destination string
+		mov		[edi], ebx				; clear destination string
 
-		CLD												; clear direction flag for stosb
+		CLD							; clear direction flag for stosb
 
-		mov		eax, SDWORD PTR [ebp + 40]				; current number to be converted
-		cmp		eax, 0									; check if the number is negative
-		jg		CONV									; jump to not negative
+		mov		eax, SDWORD PTR [ebp + 40]		; current number to be converted
+		cmp		eax, 0					; check if the number is negative
+		jg		CONV					; jump to not negative
 
-		mov		SDWORD PTR [ebp - 4], 1					; set custom negative flag
-		neg		eax										; negate to positive for ease of working with
+		mov		SDWORD PTR [ebp - 4], 1			; set custom negative flag
+		neg		eax					; negate to positive for ease of working with
 		
 
 CONV:	; Conversion Loop
-		xor		edx, edx								; clear edx for division
-		add		SDWORD PTR [ebp - 8], 1					; increment length counter
+		xor		edx, edx				; clear edx for division
+		add		SDWORD PTR [ebp - 8], 1			; increment length counter
 		
-		mov		ebx, 10									; divide number by 10 until remainder is zero
+		mov		ebx, 10					; divide number by 10 until remainder is zero
 		div		ebx
 		
 		; add 30h to remainder to make ascii char
-		push	eax										; store eax current val
-		mov		eax, edx								; fetch remainder
+		push	eax						; store eax current val
+		mov		eax, edx				; fetch remainder
 		add		eax, 30h
-		stosb											; store contents of eax to edi		
-		pop		eax										; restore
+		stosb							; store contents of eax to edi		
+		pop		eax					; restore
 		
 		; if quotient is zero we have reached the end
-		cmp		eax, 0									; If edx is 0 break loop
+		cmp		eax, 0					; If edx is 0 break loop
 		je		DN
-		jmp		CONV									; loop
+		jmp		CONV					; loop
 
 DN:		; Add sign symbol to string
-		mov		ebx, SDWORD PTR [ebp - 4]				; retrieve custom sign flag
-		cmp		ebx, 0									; IF not negative
-		je		POSI									; True: jump to positive
+		mov		ebx, SDWORD PTR [ebp - 4]		; retrieve custom sign flag
+		cmp		ebx, 0					; IF not negative
+		je		POSI					; True: jump to positive
 		
-		mov		eax, 0									; clear eax
-		mov		al, 2Dh									; move '-' to eax
-		jmp		EN										; jump to end
+		mov		eax, 0					; clear eax
+		mov		al, 2Dh					; move '-' to eax
+		jmp		EN					; jump to end
 
 POSI:	; positive number
 		
-		mov		eax, 0									; clear eax
-		mov		al, 2Bh									; move '+' to eax
+		mov		eax, 0					; clear eax
+		mov		al, 2Bh					; move '+' to eax
 
 EN:		; end
-		stosb											; store sign in string
-		;add		SDWORD PTR [ebp - 8], 1				; increment length counter
+		stosb							; store sign in string
+		;add		SDWORD PTR [ebp - 8], 1			; increment length counter
 		mov		eax, 0									
-		stosb											; store null terminator	
+		stosb							; store null terminator	
 		
 		; return length of string to local variable of writeVal
 		xor		eax, eax
 		mov		eax, [ebp - 8]
 		mov		SDWORD PTR [ebp + 44], eax
 
-		mov		esp, ebp								; remove local variables
-		popad											; restore registers
+		mov		esp, ebp				; remove local variables
+		popad							; restore registers
 		ret	8
 numToString	ENDP
 
@@ -623,45 +623,45 @@ numToString	ENDP
 ;				   that was written backwards during conversion
 ;***********************************************************************************************************
 reverseString	PROC
-		pushad											; preserve registers
-		mov		ebp, esp								; set base pointer
+		pushad							; preserve registers
+		mov		ebp, esp				; set base pointer
 		
-		xor		ebx, ebx								; clear ebx
+		xor		ebx, ebx				; clear ebx
 
 		; set source and destination to userNumString
-		mov		esi, [ebp + 40]							; OFFSET userNumString
-		mov		edi, [ebp + 44]							; OFFSET finalString
-		mov		ebx, [ebp + 36]							; Length of userNumString
+		mov		esi, [ebp + 40]				; OFFSET userNumString
+		mov		edi, [ebp + 44]				; OFFSET finalString
+		mov		ebx, [ebp + 36]				; Length of userNumString
 
-		;dec		ebx										; decrement ebx to adjust offset of string
-		add		esi, ebx								; add length to source pointer
+		;dec		ebx					; decrement ebx to adjust offset of string
+		add		esi, ebx				; add length to source pointer
 
-		STD												; set direction flag to read backward
+		STD							; set direction flag to read backward
 
-readStr:												; read string loop
-		xor		eax, eax								; clear eax
+readStr:								; read string loop
+		xor		eax, eax				; clear eax
 
-		lodsb											; fetch first character
+		lodsb							; fetch first character
 
 		; Store in destination finalString
-		CLD												; clear direction flag to write forwards
+		CLD							; clear direction flag to write forwards
 		stosb
-		STD												; set direction flag to change back to backwards reading
+		STD							; set direction flag to change back to backwards reading
 
-		dec		ebx										; decrement length counter
+		dec		ebx					; decrement length counter
 
 		cmp		ebx, 0
-		jl		DN										; if done jump out
-		jmp		readStr									; else loop
+		jl		DN					; if done jump out
+		jmp		readStr					; else loop
 
 DN:		
-mov		esi, [ebp + 44]									; OFFSET finalString
-		CLD												; clear direction flag to write forwards
-		mov		eax, 0									; add null terminator
+mov		esi, [ebp + 44]						; OFFSET finalString
+		CLD							; clear direction flag to write forwards
+		mov		eax, 0					; add null terminator
 		stosb
 
-		popad											; restore registers
-		ret 12											; clean up stack
+		popad							; restore registers
+		ret 12							; clean up stack
 reverseString	ENDP
 
 ;**********************************************************************************************************
@@ -676,17 +676,17 @@ reverseString	ENDP
 ;	description: calculates the rounded average of an integer
 ;**********************************************************************************************************
 calcAvg	PROC
-		pushad									; store general purpose registers
-		mov		ebp, esp						; set stack frame base pointer
+		pushad							; store general purpose registers
+		mov		ebp, esp				; set stack frame base pointer
 		
 		; declare and initialize local variables
-		sub		esp, 4							; create 2 SDWORD local variables
+		sub		esp, 4					; create 2 SDWORD local variables
 		mov		SDWORD PTR [ebp - 4], 0			; Average 
 
 		; calculate whole number part of average
 		xor		edx, edx
-		mov		eax, [ebp + 40]					; fetch sum
-		mov		ebx, [ebp + 36]					; fetch number count
+		mov		eax, [ebp + 40]				; fetch sum
+		mov		ebx, [ebp + 36]				; fetch number count
 
 		idiv	ebx
 		mov		SDWORD PTR [ebp - 4], eax
@@ -696,8 +696,8 @@ calcAvg	PROC
 
 		; IF (remainder * 2) >= number count, round up
 		cmp		edx, ebx
-		jge		RU								; TRUE: jump to Round Up
-		jmp		DN								; FALSE: leave average as is and jump to Display Numbers
+		jge		RU					; TRUE: jump to Round Up
+		jmp		DN					; FALSE: leave average as is and jump to Display Numbers
 
 RU:		add		SDWORD PTR [ebp - 4], 1			; Round to nearest whole number
 
@@ -705,9 +705,9 @@ DN:		; done calculating return to local variable in write val
 		mov		eax, [ebp - 4]
 		mov		[ebp + 56], eax
 
-		mov		esp, ebp						; remove local variables
-		popad									; restore general purpose registers
-		ret	8									; clean up stack
+		mov		esp, ebp				; remove local variables
+		popad							; restore general purpose registers
+		ret	8						; clean up stack
 calcAvg	ENDP
 
 
